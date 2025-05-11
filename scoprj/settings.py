@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url
+from decouple import config
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -100,15 +103,14 @@ WSGI_APPLICATION = 'scoprj.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+
+
 DATABASES = {
-    "default": {
-        "NAME": "scoruda_db_5tss",
-        "ENGINE": "django_tenants.postgresql_backend",
-        "USER": "scoruda_db_5tss_user",
-        "PASSWORD": "qdJ9etaAtBdLDhyIOgQOf8cUCuERb91r",
-        "HOST":'dpg-d0gbkt24d50c73fm8fog-a',
-    },   
+    'default': dj_database_url.parse(config('DATABASE_URL'))
 }
+
+DATABASES['default']['ENGINE'] = 'django_tenants.postgresql_backend'
+
 
 DATABASE_ROUTERS = (
     'django_tenants.routers.TenantSyncRouter',
@@ -167,10 +169,9 @@ STATICFILES_DIRS = [
     '/Volumes/Macintosh HD/sco/scoprj/static',  # Absolute path to the static folder
 ]
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 STORAGES = {
-    # ...
+
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
