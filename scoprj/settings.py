@@ -35,14 +35,15 @@ ALLOWED_HOSTS = ['*',]
 CSRF_TRUSTED_ORIGINS = [
     'https://scoruda81.onrender.com',
     'https://*.scoruda81.onrender.com', 
-    'https://scoruda81.onrender.com/login',
 ]
 SESSION_COOKIE_DOMAIN = '.scoruda81.onrender.com'
 CSRF_COOKIE_DOMAIN = '.scoruda81.onrender.com'
+
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
-CSRF_USE_SESSIONS = True  # Stores token in the session, not in a cookie
 CSRF_COOKIE_HTTPONLY = True
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 
