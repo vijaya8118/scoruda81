@@ -29,6 +29,10 @@ SECRET_KEY = 'django-insecure-aahrnabr*)+gu199b&6(_sm7w1nc=5pb)-i@=u53l%qvloyj1z
 DEBUG = True
 
 ALLOWED_HOSTS = ['*',]
+CSRF_TRUSTED_ORIGINS = [
+    'https://scoruda81.onrender.com',  
+]
+
 # scoruda.localhost
 BASE_URL = 'localhost'
 LOGIN_URL = '/create_member/'
