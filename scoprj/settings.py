@@ -28,6 +28,9 @@ SECRET_KEY = 'django-insecure-aahrnabr*)+gu199b&6(_sm7w1nc=5pb)-i@=u53l%qvloyj1z
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+
+
+
 ALLOWED_HOSTS = ['*',]
 CSRF_TRUSTED_ORIGINS = [
     'https://scoruda81.onrender.com',
@@ -38,12 +41,12 @@ SESSION_COOKIE_DOMAIN = '.scoruda81.onrender.com'
 CSRF_COOKIE_DOMAIN = '.scoruda81.onrender.com'
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
-import logging
+CSRF_USE_SESSIONS = True  # Stores token in the session, not in a cookie
+CSRF_COOKIE_HTTPONLY = True
 
-logger = logging.getLogger('django.security.csrf')
-logger.setLevel(logging.DEBUG)
-logger.addHandler(logging.StreamHandler())
-# scoruda.localhost
+
+
+
 BASE_URL = 'localhost'
 LOGIN_URL = '/create_member/'
 CSRF_TRUSTED_ORIGINS = ['https://*']
