@@ -30,9 +30,18 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*',]
 CSRF_TRUSTED_ORIGINS = [
-    'https://scoruda81.onrender.com',  
+    'https://scoruda81.onrender.com',
+    'https://*.scoruda81.onrender.com', 
 ]
+SESSION_COOKIE_DOMAIN = '.scoruda81.onrender.com'
+CSRF_COOKIE_DOMAIN = '.scoruda81.onrender.com'
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+import logging
 
+logger = logging.getLogger('django.security.csrf')
+logger.setLevel(logging.DEBUG)
+logger.addHandler(logging.StreamHandler())
 # scoruda.localhost
 BASE_URL = 'localhost'
 LOGIN_URL = '/create_member/'
