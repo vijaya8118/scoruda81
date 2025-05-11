@@ -102,12 +102,11 @@ WSGI_APPLICATION = 'scoprj.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 DATABASES = {
     "default": {
-        "NAME": "scodb",
+        "NAME": "scoruda_db_5tss",
         "ENGINE": "django_tenants.postgresql_backend",
-        "USER": "postgres",
-        "PASSWORD": "root1234",
-        "HOST":'localhost',
-        "PORT":5433,
+        "USER": "scoruda_db_5tss_user",
+        "PASSWORD": "qdJ9etaAtBdLDhyIOgQOf8cUCuERb91r",
+        "HOST":'dpg-d0gbkt24d50c73fm8fog-a',
     },   
 }
 
