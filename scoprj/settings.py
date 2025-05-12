@@ -35,6 +35,8 @@ ALLOWED_HOSTS = ['*',]
 CSRF_TRUSTED_ORIGINS = [
     'https://scoruda81.onrender.com',
     'https://*.scoruda81.onrender.com', 
+    'https://scoruda.com',
+    'https://*.scoruda.com',
 ]
 SESSION_COOKIE_DOMAIN = '.scoruda81.onrender.com'
 CSRF_COOKIE_DOMAIN = '.scoruda81.onrender.com'
