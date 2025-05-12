@@ -1375,7 +1375,7 @@ def createCompany(request):
 
                 email = EmailMessage(
                     'Domain name from Scoruda',  # Subject of the email
-                    f"Domain has been created successfully for your company. Please use the given domain name for login: http://{domain.domain}:8000/setupcompany",  # Body
+                    f"Domain has been created successfully for your company. Please use the given domain name for login: https://{domain.domain}/setupcompany",  # Body
                     to=[tenant_email]
                 )
                 print('Email launching....')
