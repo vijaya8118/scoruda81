@@ -32,7 +32,7 @@
 
 <!-- Main Content -->
 {% if user.is_authenticated %}
-    {% if user.get_role_display == 'Manager' %}
+    {% if user.get_role_display == 'manager' %}
         <div class="main-content" id="main">
             <nav class="navbar">
                 <div class="menu-toggle" id="menuToggle">
@@ -75,7 +75,7 @@
             </div>
         </div>
 
-    {% elif user.get_role_display == 'Employee' %}
+    {% elif user.get_role_display == 'employee' %}
         <div class="main-content" id="main">
             <nav class="navbar">
                 <div class="menu-toggle" id="menuToggle">
@@ -90,7 +90,7 @@
             </nav>
         </div>
 
-    {% elif user.get_role_display == 'Admin' %}
+    {% elif user.get_role_display == 'admin' %}
         <div class="main-content" id="main">
             <nav class="navbar">
                 <div class="menu-toggle" id="menuToggle">
