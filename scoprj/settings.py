@@ -187,13 +187,15 @@ STATICFILES_DIRS = [
     '/Volumes/Macintosh HD/sco/scoprj/static',  # Absolute path to the static folder
 ]
 
-
 STORAGES = {
-
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
