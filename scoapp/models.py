@@ -47,7 +47,7 @@ class Common_InfoShop(models.Model):
     phone=models.CharField('Phone Number',max_length=10,default='n/a')
     gst=models.CharField('GST Number',max_length=15,default='n/a')
     bank = models.CharField('Bank name',max_length=20,default='n/a')
-    account = models.CharField('Account NUmber',max_length=20,default='n/a')
+    account = models.CharField('Account Number',max_length=20,default='n/a')
     ifsc = models.CharField('IFSC code',max_length=15,default='n/a')
     due_date = models.CharField('Payment Duration', max_length=5,default=0,help_text='Enter in days')
     class Meta:
