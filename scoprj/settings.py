@@ -185,9 +185,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Optional: directories where you can store static files (for development)
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # For static files in your app's base directory
-    'scoruda81/static/',  # Absolute path to the static folder
-]
+    os.path.join(BASE_DIR, 'static')]
 
 STORAGES = {
     "default": {
