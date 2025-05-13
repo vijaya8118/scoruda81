@@ -38,8 +38,8 @@ CSRF_TRUSTED_ORIGINS = [
     'https://scoruda.com',
     'https://*.scoruda.com',
 ]
-SESSION_COOKIE_DOMAIN = '.scoruda81.onrender.com'
-CSRF_COOKIE_DOMAIN = '.scoruda81.onrender.com'
+SESSION_COOKIE_DOMAIN = '.scoruda.com'
+CSRF_COOKIE_DOMAIN = '.scoruda.com'
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
