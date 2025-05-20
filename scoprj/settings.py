@@ -188,9 +188,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Optional: directories where you can store static files (for development)
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # For static files in your app's base directory
-    '/Volumes/Macintosh HD/sco/scoprj/static',  # Absolute path to the static folder
-]
+    os.path.join(BASE_DIR, 'static')]
 
 STORAGES = {
     "default": {
@@ -200,6 +198,9 @@ STORAGES = {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/media/'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

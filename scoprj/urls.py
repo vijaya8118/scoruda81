@@ -19,6 +19,7 @@ from django.contrib import admin
 from django.urls import path
 from scoapp import views
 from scoapp.admin import tenant_admin_site
+<<<<<<< HEAD
 from django.urls import path
 from django.http import HttpResponse
 from django.db import connection
@@ -31,6 +32,10 @@ def test_schema_creation(request):
         return HttpResponse(f"✅ Schema '{schema_name}' created successfully.")
     except Exception as e:
         return HttpResponse(f"❌ Failed to create schema: {str(e)}")
+=======
+from django.conf import settings
+from django.conf.urls.static import static
+>>>>>>> 33314d5c4b96a1c2af51c6f2d65cb7ef4d8d78f7
 
 urlpatterns = [
     path("admin/", admin.site.urls),

@@ -1391,6 +1391,7 @@ def createCompany(request):
     
     return render(request, 'form.html', context={'form': tenant_form if request.method == 'POST' else form})
 
+
 def emailsent(request):
     return render(request,'emailsent.html',context={})
 
