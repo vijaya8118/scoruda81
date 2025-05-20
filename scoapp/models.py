@@ -10,7 +10,7 @@ class Client(TenantMixin):
     created = models.DateTimeField(auto_now_add=True)
     email = models.EmailField(max_length=255)  # Email field
     contact_number = models.CharField(max_length=15, blank=True, null=True)  # Contact number (can store numbers and optional)
-    
+    auto_create_schema = True
     def __str__(self):
         return self.name
 

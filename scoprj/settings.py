@@ -125,8 +125,11 @@ WSGI_APPLICATION = 'scoprj.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 
+
 DATABASES = {
-    'default': dj_database_url.parse(config('DATABASE_URL'))
+    'default': dj_database_url.parse(
+        config('DATABASE_URL', default='postgresql://scoruda_db_5tss_user:qdJ9etaAtBdLDhyIOgQOf8cUCuERb91r@dpg-d0gbkt24d50c73fm8fog-a.oregon-postgres.render.com/scoruda_db_5tss')
+    )
 }
 
 DATABASES['default']['ENGINE'] = 'django_tenants.postgresql_backend'

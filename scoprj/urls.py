@@ -19,6 +19,18 @@ from django.contrib import admin
 from django.urls import path
 from scoapp import views
 from scoapp.admin import tenant_admin_site
+from django.urls import path
+from django.http import HttpResponse
+from django.db import connection
+
+def test_schema_creation(request):
+    try:
+        schema_name = "test_render_schema"
+        with connection.cursor() as cursor:
+            cursor.execute(f"CREATE SCHEMA {schema_name}")
+        return HttpResponse(f"✅ Schema '{schema_name}' created successfully.")
+    except Exception as e:
+        return HttpResponse(f"❌ Failed to create schema: {str(e)}")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -113,4 +125,7 @@ urlpatterns = [
 ####
     path('download_pdf/', views.download_pdf, name='download_pdf'),
 
+    path("test-schema/", test_schema_creation),
+
 ]
+

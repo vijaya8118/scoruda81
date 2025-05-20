@@ -1344,19 +1344,17 @@ def createCompany(request):
         if tenant_form.is_valid():
             print('After Valid')
             tenant = tenant_form.save()
+
+            # ✅ First, create the schema for the tenant
+            tenant.create_schema(check_if_exists=True)  # Make sure the schema is created
+            print(f"Schema for {tenant.schema_name} created.")
+
+            # ✅ Now run migrations for the newly created schema
+            from django.core.management import call_command
+            call_command('migrate_schemas', schema_name=tenant.schema_name)
+            print('Migrations applied to schema.')
+
             print('Tenant Saved')
-
-            try:
-                # Manually create the schema for the tenant
-                # This avoids running all migrations, but it will set up the schema.
-                tenant.create_schema(check_if_exists=True)  # Make sure to create schema
-                print(f"Schema for {tenant.schema_name} created.")
-       
-                # You can use migrate_schemas later when applying migrations
-                # For example: call_command('migrate_schemas', schema_name=tenant.schema_name)
-
-            except Exception as e:
-                print(f"Error migrating schemas: {e}")
 
             try:
                 # Create the domain associated with the tenant
