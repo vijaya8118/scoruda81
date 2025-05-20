@@ -1344,6 +1344,8 @@ def createCompany(request):
         if tenant_form.is_valid():
             print('After Valid')
             tenant = tenant_form.save()
+            call_command('migrate_schemas', schema_name=tenant.schema_name)
+
             print('Tenant Saved')
 
             try:
