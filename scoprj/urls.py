@@ -75,8 +75,8 @@ urlpatterns = [
     path('p', views.purchaseauto_process, name='p'),####Auto
     path('purchaseprod',views.purchase_auto,name='purchaseprod'),
 
-    path('retailpurch',views.purchase,name='retailpurch'),
-    path('p1',views.process_purchase,name='p1'),
+    path('retailpurch',views.purchaseRetail,name='retailpurch'),
+    path('r1',views.process_purchRetail,name='r1'),
     
 
 ##overviews
