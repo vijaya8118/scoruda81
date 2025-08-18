@@ -145,21 +145,21 @@ WSGI_APPLICATION = 'scoprj.wsgi.application'
 
 
 
-# DATABASES = {
-#     'default': dj_database_url.parse(
-#         config('DATABASE_URL', default='postgresql://scoruda_db_cxyg_user:5VtI8Cw3LSrZuSSHupVqO03UB7ripz9G@dpg-d0mb1deuk2gs73fgib20-a.oregon-postgres.render.com/scoruda_db_cxyg')
-#     )
-# }
-
-# DATABASES['default']['ENGINE'] = 'django_tenants.postgresql_backend'
 DATABASES = {
-    'default': {
-        'ENGINE': 'django_tenants.postgresql_backend',
-        'NAME': 'scodb',
-        'USER': 'postgres',
-        'PASSWORD':'root1234',
-    }
+    'default': dj_database_url.parse(
+        config('DATABASE_URL', default='postgresql://scoruda_db_9aga_user:LdvIV0A9Bx1Kibn4fZkvnEus12YNIMCK@dpg-d2haun0dl3ps7384dam0-a.oregon-postgres.render.com/scoruda_db_9aga')
+    )
 }
+
+DATABASES['default']['ENGINE'] = 'django_tenants.postgresql_backend'
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django_tenants.postgresql_backend',
+#         'NAME': 'scodb',
+#         'USER': 'postgres',
+#         'PASSWORD':'root1234',
+#     }
+# }
 
 
 DATABASE_ROUTERS = (
