@@ -77,7 +77,9 @@ urlpatterns = [
 
     path('retailpurch',views.purchase,name='retailpurch'),
     path('p1',views.process_purchase,name='p1'),
-
+    
+    path('retailin',views.retailin, name='retailin'),
+    path('r1', views.process_r1, name='r1'),
 ##overviews
     path('show',views.scout,name='show'),
     path('cshbal',views.cash_balance,name='cshbal'),
