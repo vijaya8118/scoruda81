@@ -625,86 +625,113 @@ def purchase(request):
     return render(request,'invoice_purch.html',context={'items':items,'head':head,'form':form,})
 
 def process_purchase(request):
-    print("enter view")
+    print("enter Purchase view")
+    usr = request.user.id
+    print('usr',usr)
     if request.method == 'POST':
         print('POST request received')
         try:
             print('Entering POST try block')
             selected_products = json.loads(request.body.decode('utf-8'))
             print(selected_products)
+            
             if not isinstance(selected_products, list):
                 raise ValueError("Expected a list of products, got something else.")
+            
             total_amount = 0
+            
             if not selected_products:
                 print("No products received in the order.")
+                return redirect('b2c')
+            
+            # Get the latest purchase invoice and calculate the next bill number
             try:
                 latest_invoice = Purchase_model.objects.latest('date')
-                bill_number = latest_invoice.billnum + 1
-            except Invoice_model.DoesNotExist:
-                # If no invoices exist, set the initial bill number to 1
+                bill_number = latest_invoice.num
+            except Purchase_model.DoesNotExist:
                 bill_number = 1
+
             print('Bill number:', bill_number)
+
             for product in selected_products:  
                 if not isinstance(product, dict):
                     print(f"Skipping invalid product: {product}")
                     continue
+                
                 product_id = product.get('productId')
                 payment_mode = product.get('mode')  # Payment mode
-                quantity = product.get('qty', 1)  # Default quantity is 1 if not provided
-                seller_buyer_id = product.get('customer')  
-            
-                seller_buyer = Seller.objects.get(id=seller_buyer_id)
+                quantity = product.get('qty',)  # Default quantity is 1 if not provided
+                seller_buyer_id = product.get('customer')  # Seller ID (not the instance yet)
+                
+                try:
+                    seller_buyer = Seller.objects.get(id=seller_buyer_id)
+                except Seller.DoesNotExist:
+                    print(f"Seller with ID {seller_buyer_id} not found.")
+                    continue
+                
                 print('Mode:', payment_mode)                              
                 print('Quantity:', quantity)  
                 print("Seller/Buyer:", seller_buyer)
+
                 if not product_id:
                     print("Missing product ID, skipping this product.")
                     continue
+                
                 product_list = Add_item_model.objects.filter(id=product_id)
                 if not product_list.exists():
                     print(f"Product with ID {product_id} not found.")
                     continue
+                
+                # Process the product
                 for p in product_list:
-                    ratee = p.rate  # Product rate
-                    print('Product rate:', ratee)
+                    rate = p.rate_purch  # Product rate
+                    print('Product rate:', rate)
                     try:
-                        amount = float(quantity) * float(ratee)  # Calculate the amount
+                        amount = int(quantity) * int(rate)  # Calculate the amount
                         print('Amount:', amount)
                     except Exception as e:
                         print(f"Error calculating amount: {e}")
                         continue
+                    
+                    # Create a new purchase record with the same billnum for all products
                     new_invoice = Purchase_model(
                         product_id=product_id,
                         qty=quantity,
-                        rate = ratee,
                         amt=amount,
-                        billnum=bill_number,  # Ensure all products have the same billnum
                         mode=payment_mode,
-                        selbuy=seller_buyer,  # Now passing the actual Customer instance
+                        selbuy=seller_buyer , # Passing the actual Seller instance
                         user = request.user
                     )
+
+                    # Save the invoice to the database
                     new_invoice.save()
                     print(f"Invoice data saved: {new_invoice}")
+                    
+                    # Update total amount
                     total_amount += amount
-
-                    # If the payment mode is cash or UPI, create an entry in the CashBook model
+                    
+                    # If payment mode is cash or UPI, add to PurchaseBook
                     if payment_mode in ['cash', 'UPI']:
                         try:
-                            cash_book_entry = PurchaseBook(
+                            purchase_book_entry = PurchaseBook(
                                 user = request.user,
-                                selbuy=seller_buyer,  # Link to the customer
+                                selbuy=seller_buyer,  # Link to the seller
                                 amt=amount,  # Amount paid
                                 mode=payment_mode,  # Payment mode (cash/UPI)
-                                comment=f"Payment for Invoice {bill_number}"  # Optional comment
+                                comment=f"Payment for Purchase Invoice {bill_number}"  # Optional comment
                             )
-                            cash_book_entry.save()
-                            print(f"CashBook entry saved: {cash_book_entry}")
+                            purchase_book_entry.save()
+                            print(f"PurchaseBook entry saved: {purchase_book_entry}")
                         except Exception as e:
-                            print(f"Error saving CashBook entry: {e}")
-            
-            return redirect('retailpurch')
+                            print(f"Error saving PurchaseBook entry: {e}")
+
+            # Return a redirect or response based on successful processing
+            return redirect('b2c')  # Redirect to the b2c page after processing
+
         except Exception as e:
             print(f"Error processing order: {e}")
+            return render(request, 'port.html', context={'error_message': 'Error processing order.'})
+
 
     return render(request, 'invoice_purch.html', context={})
 
