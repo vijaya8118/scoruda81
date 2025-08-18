@@ -146,7 +146,7 @@ DATABASES = {
      )
  }
 
- DATABASES['default']['ENGINE'] = 'django_tenants.postgresql_backend'
+DATABASES['default']['ENGINE'] = 'django_tenants.postgresql_backend'
 
 
 DATABASE_ROUTERS = (
