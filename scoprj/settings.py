@@ -29,11 +29,9 @@ SECRET_KEY = 'django-insecure-aahrnabr*)+gu199b&6(_sm7w1nc=5pb)-i@=u53l%qvloyj1z
 DEBUG = True
 
 
-# ImageKit configuration
-IMAGEKIT_URL_ENDPOINT = 'https://ik.imagekit.io/scoruda'
-IMAGEKIT_PUBLIC_KEY = 'public_fhJjNfRQ81R2ofbKG90iOGGjzus='
-IMAGEKIT_PRIVATE_KEY = 'private_AkVoF7SqVVpIZl/hx4Z4CHs3aaA='  # needed for uploads
-
+IMAGEKIT_URL_ENDPOINT = os.environ.get('IMAGEKIT_URL_ENDPOINT')
+IMAGEKIT_PUBLIC_KEY = os.environ.get('IMAGEKIT_PUBLIC_KEY')
+IMAGEKIT_PRIVATE_KEY = os.environ.get('IMAGEKIT_PRIVATE_KEY')
 
 ALLOWED_HOSTS = ['*',]
 CSRF_TRUSTED_ORIGINS = [
@@ -41,10 +39,7 @@ CSRF_TRUSTED_ORIGINS = [
     'https://*.scoruda81.onrender.com', 
     'https://scoruda.com',
     'https://*.scoruda.com',
-     'http://localhost',
-    'http://127.0.0.1',
-    'http://localhost:8000',  
-    'http://127.0.0.1:8000',
+
 ]
 SESSION_COOKIE_DOMAIN = '.scoruda.com'
 CSRF_COOKIE_DOMAIN = '.scoruda.com'
@@ -145,21 +140,13 @@ WSGI_APPLICATION = 'scoprj.wsgi.application'
 
 
 
-# DATABASES = {
-#     'default': dj_database_url.parse(
-#         config('DATABASE_URL', default='postgresql://scoruda_db_cxyg_user:5VtI8Cw3LSrZuSSHupVqO03UB7ripz9G@dpg-d0mb1deuk2gs73fgib20-a.oregon-postgres.render.com/scoruda_db_cxyg')
-#     )
-# }
-
-# DATABASES['default']['ENGINE'] = 'django_tenants.postgresql_backend'
 DATABASES = {
-    'default': {
-        'ENGINE': 'django_tenants.postgresql_backend',
-        'NAME': 'scodb',
-        'USER': 'postgres',
-        'PASSWORD':'root1234',
-    }
-}
+     'default': dj_database_url.parse(
+         config('DATABASE_URL', default='postgresql://scoruda_db_9aga_user:LdvIV0A9Bx1Kibn4fZkvnEus12YNIMCK@dpg-d2haun0dl3ps7384dam0-a/scoruda_db_9aga')
+     )
+ }
+
+ DATABASES['default']['ENGINE'] = 'django_tenants.postgresql_backend'
 
 
 DATABASE_ROUTERS = (
