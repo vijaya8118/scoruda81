@@ -1,17 +1,48 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Members through .csv file</title>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 6px;
+        }
+    </style>
 </head>
 <body>
     <h2>Upload Members through .csv file</h2>
+
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Upload</button>
     </form>
+
+    {% if invalid_rows %}
+        <h3>Invalid Rows</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Row Number</th>
+                    <th>Error</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in invalid_rows %}
+                <tr>
+                    <td>{{ item.row }}</td>
+                    <td>{{ item.error }}</td>
+                    <td>
+                        <pre>{{ item.data }}</pre>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
 </body>
 </html>

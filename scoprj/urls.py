@@ -19,23 +19,7 @@ from django.contrib import admin
 from django.urls import path
 from scoapp import views
 from scoapp.admin import tenant_admin_site
-<<<<<<< HEAD
-from django.urls import path
-from django.http import HttpResponse
-from django.db import connection
 
-def test_schema_creation(request):
-    try:
-        schema_name = "test_render_schema"
-        with connection.cursor() as cursor:
-            cursor.execute(f"CREATE SCHEMA {schema_name}")
-        return HttpResponse(f"✅ Schema '{schema_name}' created successfully.")
-    except Exception as e:
-        return HttpResponse(f"❌ Failed to create schema: {str(e)}")
-=======
-from django.conf import settings
-from django.conf.urls.static import static
->>>>>>> 33314d5c4b96a1c2af51c6f2d65cb7ef4d8d78f7
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -119,7 +103,6 @@ urlpatterns = [
     path('login',views.loginPage,name='login'),
     path('signout',views.signout,name='signout'),
     # path('',views.frontPage,name=''),
-    path('upload',views.upload_users,name='upload'),
     path('cr/<str:pk>',views.credit,name='cr'),
     path('cr1/<str:pk>/',views.credit1,name='cr1'),
 
@@ -129,8 +112,15 @@ urlpatterns = [
     path('dashboard',views.dashboard_today,name='dashboard'),
 ####
     path('download_pdf/', views.download_pdf, name='download_pdf'),
+#####
+    path('upload_items/', views.upload_items, name='upload_items'),
+    path('upload_customer/', views.upload_customer, name='upload_customer'),
+    path('upload_seller/', views.upload_seller, name='upload_seller'),
+    path('upload_purchasebook/', views.upload_purchasebook, name='upload_purchasebook'),
+    path('upload_cashebook/', views.upload_cashebook, name='upload_cashebook'),
+    path('upload_invoice/', views.upload_invoice, name='upload_invoice'),
+    path('upload_purchase/', views.upload_purchase, name='upload_purchase'),
 
-    path("test-schema/", test_schema_creation),
 
 ]
 

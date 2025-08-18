@@ -5,10 +5,14 @@ import re
 from django.db import connection
 from django.contrib.auth.hashers import make_password
 
+class UploadForm(forms.Form):
+    file = forms.FileField()
+
 class TenantForm(forms.ModelForm):
     class Meta:
         model = Client
         fields = '__all__'
+        exclude=('domain_url',)
         widgets = {
             'name': forms.TextInput(attrs={'placeholder': 'Add Company Name ...'}),
             'schema_name': forms.TextInput(attrs={'placeholder': 'Add Subdomain ...'}),

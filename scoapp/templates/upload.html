@@ -1,0 +1,21 @@
+{% include 'user_navbar.html' %}
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Upload">
+</form>
+
+{% if success %}
+    <p style="color:green;">Upload successful!</p>
+    <p>Total rows: {{ total_rows }}</p>
+    <p>Successful: {{ successful_rows }}</p>
+    <p>Failed: {{ failed_rows }}</p>
+{% endif %}
+
+{% if errors %}
+    <ul style="color:red;">
+        {% for error in errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}

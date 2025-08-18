@@ -29,6 +29,10 @@ SECRET_KEY = 'django-insecure-aahrnabr*)+gu199b&6(_sm7w1nc=5pb)-i@=u53l%qvloyj1z
 DEBUG = True
 
 
+# ImageKit configuration
+IMAGEKIT_URL_ENDPOINT = 'https://ik.imagekit.io/scoruda'
+IMAGEKIT_PUBLIC_KEY = 'public_fhJjNfRQ81R2ofbKG90iOGGjzus='
+IMAGEKIT_PRIVATE_KEY = 'private_AkVoF7SqVVpIZl/hx4Z4CHs3aaA='  # needed for uploads
 
 
 ALLOWED_HOSTS = ['*',]
@@ -37,6 +41,10 @@ CSRF_TRUSTED_ORIGINS = [
     'https://*.scoruda81.onrender.com', 
     'https://scoruda.com',
     'https://*.scoruda.com',
+     'http://localhost',
+    'http://127.0.0.1',
+    'http://localhost:8000',  
+    'http://127.0.0.1:8000',
 ]
 SESSION_COOKIE_DOMAIN = '.scoruda.com'
 CSRF_COOKIE_DOMAIN = '.scoruda.com'
@@ -45,8 +53,15 @@ CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+## localhost 
+# SESSION_COOKIE_DOMAIN = None
+# SESSION_COOKIE_SECURE = False
+# CSRF_COOKIE_SECURE = False
+# SESSION_COOKIE_HTTPONLY = True
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+CORS_ALLOWED_ORIGINS = ["http://localhost:8080"]
+CORS_ALLOW_CREDENTIALS = True
 
 
 
@@ -100,6 +115,10 @@ MIDDLEWARE = [
 
 
 ]
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 ROOT_URLCONF = 'scoprj.urls'
 
 TEMPLATES = [
@@ -126,13 +145,21 @@ WSGI_APPLICATION = 'scoprj.wsgi.application'
 
 
 
-DATABASES = {
-    'default': dj_database_url.parse(
-        config('DATABASE_URL', default='postgresql://scoruda_db_5tss_user:qdJ9etaAtBdLDhyIOgQOf8cUCuERb91r@dpg-d0gbkt24d50c73fm8fog-a.oregon-postgres.render.com/scoruda_db_5tss')
-    )
-}
+# DATABASES = {
+#     'default': dj_database_url.parse(
+#         config('DATABASE_URL', default='postgresql://scoruda_db_cxyg_user:5VtI8Cw3LSrZuSSHupVqO03UB7ripz9G@dpg-d0mb1deuk2gs73fgib20-a.oregon-postgres.render.com/scoruda_db_cxyg')
+#     )
+# }
 
-DATABASES['default']['ENGINE'] = 'django_tenants.postgresql_backend'
+# DATABASES['default']['ENGINE'] = 'django_tenants.postgresql_backend'
+DATABASES = {
+    'default': {
+        'ENGINE': 'django_tenants.postgresql_backend',
+        'NAME': 'scodb',
+        'USER': 'postgres',
+        'PASSWORD':'root1234',
+    }
+}
 
 
 DATABASE_ROUTERS = (
@@ -190,17 +217,19 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')]
 
+# settings.py
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "BACKEND": "scoapp.imagekit_storage.ImageKitStorage"
     },
     "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-    },
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+    }
 }
-MEDIA_URL = '/media/'
-MEDIA_ROOT = '/media/'
 
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # avoid using '/'
+MEDIA_URL = '/media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

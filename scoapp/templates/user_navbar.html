@@ -32,7 +32,7 @@
 
 <!-- Main Content -->
 {% if user.is_authenticated %}
-    {% if user.get_role_display == 'Manager' %}
+    {% if user.get_role_display == 'manager' %}
         <div class="main-content" id="main">
             <nav class="navbar">
                 <div class="menu-toggle" id="menuToggle">
@@ -75,7 +75,7 @@
             </div>
         </div>
 
-    {% elif user.get_role_display == 'Employee' %}
+    {% elif user.get_role_display == 'employee' %}
         <div class="main-content" id="main">
             <nav class="navbar">
                 <div class="menu-toggle" id="menuToggle">
@@ -168,7 +168,9 @@
     {% endif %}
 
 {% else %}
-    <h1>Not logged in</h1>
+    <h1>Not logged in <p>Raw role: {{ user}}</p>
+<p>Role display: {{ user.get_role_display }}</p>
+</h1>
     <nav>
         <ul>
             <li><a href="login">Login</a></li>

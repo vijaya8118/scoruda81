@@ -24,6 +24,11 @@ from weasyprint import HTML
 from django.template.loader import render_to_string
 from tenant_schemas.utils import schema_context, get_tenant_model
 from django.db import IntegrityError
+import csv
+from django.core.files.storage import FileSystemStorage
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 #views 
 ## User defines functions
@@ -1210,57 +1215,6 @@ def frontPage(request):
     return render(request,'frontpage.html',context={})
 
 
-import csv
-from django.core.files.storage import FileSystemStorage
-
-def upload_users(request):
-    form = UploadFileForm(request.POST, request.FILES)
-    if request.method == 'POST':
-        form = UploadFileForm(request.POST, request.FILES)
-        file = request.FILES['file']
-        fs = FileSystemStorage()
-        filename = fs.save(file.name, file)
-        file_path = fs.path(filename)
-        try:
-                # Try opening the file with UTF-8 encoding
-                with open(file_path, 'r', newline='', encoding='utf-8') as csvfile:
-                    reader = csv.DictReader(csvfile)
-                    for row in reader:
-                        for row in reader:
-                            Invoice_model.objects.create(
-                             date=row['date'],
-                            date1=row['date1'],
-                            num=row['num'],
-                            billnum=row['billnum'],
-                            mode=row['mode'],
-                            product=row['product'],
-                            qty=row['qty'],
-                            rate=row['rate'],
-                            amt =row['amt'],
-                                # Add other fields as needed
-                            )
-                            print('sucess1')
-        except UnicodeDecodeError:
-                # If UTF-8 encoding fails, try another encoding (e.g., ISO-8859-1)
-                with open(file_path, 'r', newline='', encoding='ISO-8859-1') as csvfile:
-                    reader = csv.DictReader(csvfile)
-                    for row in reader:
-                        Invoice_model.objects.create(
-                            date=row['date'],
-                            date1=row['date1'],
-                            num=row['num'],
-                            billnum=row['billnum'],
-                            mode=row['mode'],
-                            product=row['product'],
-                            qty=row['qty'],
-                            rate=row['rate'],
-                            amt =row['amt'],
-                        )
-                        print('sucess2')
-
-    return render(request, 'file.html', {'form': form})
-
-
 from django.http import JsonResponse
 import redis
 
@@ -1431,7 +1385,15 @@ def loginPage(request):
         user = authenticate(request,username = username,password = password)
         if user is not None:
             login(request,user)
-            request.session.set_expiry(1209600)
+            # request.session.set_expiry(1209600)
+            User = get_user_model()
+            is_anonymous = request.user.is_anonymous
+
+            print('An',is_anonymous)
+            print(user.is_active)
+            print("username", username)
+            print('Groups:', [group.name for group in user.groups.all()])  # prints list of group names
+
             return redirect('show')
         else:
             messages.info(request,'User or Password is incorrect')
@@ -1559,6 +1521,8 @@ def dashboard_today(request):
 def landing(request):
     return render(request,'landing.html',context={})
 
+
+#########################   Add onns     #####################################
 def download_pdf(request):
     html_content = render_to_string('pdf_template.html', {'data': 'some_data'})
     pdf = HTML(string=html_content).write_pdf()
@@ -1566,3 +1530,205 @@ def download_pdf(request):
     response['Content-Disposition'] = 'attachment; filename="file.pdf"'
 
     return response
+
+########################### UPLOAD CSV #############################################
+# def upload_users(request):
+#     form = UploadFileForm(request.POST, request.FILES)
+#     if request.method == 'POST':
+#         form = UploadFileForm(request.POST, request.FILES)
+#         file = request.FILES['file']
+#         fs = FileSystemStorage()
+#         filename = fs.save(file.name, file)
+#         file_path = fs.path(filename)
+#         try:
+#                 # Try opening the file with UTF-8 encoding
+#                 with open(file_path, 'r', newline='', encoding='utf-8') as csvfile:
+#                     reader = csv.DictReader(csvfile)
+#                     for row in reader:
+#                         for row in reader:
+#                             Add_item_model.objects.create(
+#                             #  date=row['date'],
+#                             # date1=row['date1'],
+#                             # num=row['num'],
+#                             # billnum=row['billnum'],
+#                             # mode=row['mode'],
+#                             product=row['product'],
+#                             rate_purch=row['rate_purch'],
+#                             rate=row['rate'],
+#                             # amt =row['amt'],
+#                                 # Add other fields as needed
+#                             )
+#                             print('sucess1')
+#         except UnicodeDecodeError:
+#                 # If UTF-8 encoding fails, try another encoding (e.g., ISO-8859-1)
+#                 with open(file_path, 'r', newline='', encoding='ISO-8859-1') as csvfile:
+#                     reader = csv.DictReader(csvfile)
+#                     for row in reader:
+#                         Add_item_model.objects.create(
+#                             #  date=row['date'],
+#                             # date1=row['date1'],
+#                             # num=row['num'],
+#                             # billnum=row['billnum'],
+#                             # mode=row['mode'],
+#                             product=row['product'],
+#                             rate_purch=row['rate_purch'],
+#                             rate=row['rate'],
+#                             # amt =row['amt'],
+#                                 # Add other fields as needed
+#                             )
+#                         print('sucess2')
+
+#     return render(request, 'file.html', {'form': form})
+
+
+def handle_csv_upload(request, model, field_mappings):
+    """
+    Handles file upload, form validation, and saves CSV data to the given model.
+
+    :param request: Django HttpRequest object
+    :param model: Django model class
+    :param field_mappings: Dict mapping model fields to CSV columns
+    :return: Tuple (success: bool, form instance)
+    """
+    form = UploadFileForm(request.POST or None, request.FILES or None)
+
+    if request.method == 'POST' and form.is_valid():
+        file = request.FILES['file']
+        fs = FileSystemStorage()
+        filename = fs.save(file.name, file)
+        file_path = fs.path(filename)
+
+        try:
+            _parse_and_save(file_path, model, field_mappings, encoding='utf-8')
+        except UnicodeDecodeError:
+            _parse_and_save(file_path, model, field_mappings, encoding='ISO-8859-1')
+
+        return True, form  # Indicate success
+
+    return False, form  # Return form with errors if not valid
+
+
+def _parse_and_save(file_path, model, field_mappings, encoding):
+    with open(file_path, 'r', newline='', encoding=encoding) as csvfile:
+        reader = csv.DictReader(csvfile)
+        print('111111111111111111')
+        for row in reader:
+            data = {
+                model_field: row[csv_column]
+                for model_field, csv_column in field_mappings.items()
+            }
+            print(data)
+            model.objects.create(**data)
+
+
+def upload_items(request):
+    field_mappings = {
+        'product': 'product',
+        'rate_purch': 'rate_purch',
+        'rate': 'rate',
+    }
+    success, form = handle_csv_upload(request, Add_item_model, field_mappings)
+    return render(request, 'file.html', {'form': form, 'success': success})
+
+def upload_customer(request):
+    field_mappings = {
+        'name': 'name',
+        'address': 'address',
+        'phone': 'phone',
+        'bank':'bank',
+        'account':'account',
+        'ifsc':'ifsc',
+    }
+    success, form = handle_csv_upload(request, Customer, field_mappings)
+    return render(request, 'file.html', {'form': form, 'success': success})
+
+def upload_seller(request):
+    field_mappings = {
+        'name': 'name',
+        'address': 'address',
+        'phone': 'phone',
+        'bank':'bank',
+        'account':'account',
+        'ifsc':'ifsc',
+    }
+    success, form = handle_csv_upload(request, Seller, field_mappings)
+    return render(request, 'file.html', {'form': form, 'success': success})
+
+##################
+def parse_csv(file):
+    return csv.DictReader(file.read().decode('utf-8').splitlines())
+
+# Helper: get model instance by ID
+def get_instance(model, pk):
+    try:
+        return model.objects.get(id=pk)
+    except model.DoesNotExist:
+        return None
+
+def handle_csv_uploa1(request, model_class, selbuy_model, product_model=None):
+    invalid_rows = []  # Declare at a higher level so it's always available
+
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            reader = parse_csv(request.FILES['file'])
+
+            for idx, row in enumerate(reader, start=1):
+                try:
+                    customer = get_instance(selbuy_model, int(row['selbuy'].strip()))
+                    if not customer:
+                        raise ValueError(f"Invalid customer ID: {row['selbuy']}")
+
+                    data = {
+                        'date': datetime.fromisoformat(row['date']),
+                        'date1': datetime.strptime(row['date1'], '%Y-%m-%d').date(),
+                        'selbuy': customer,
+                        'mode': row['mode'],
+                        'amt': float(row['amt']),
+                        
+                    }
+
+                    if 'comment' in row:
+                        data['comment'] = row['comment']
+                    if 'billnum' in row:
+                        data['billnum'] = int(row['billnum'])
+
+                    if product_model and 'product' in row:
+                        product = get_instance(product_model, int(row['product'].strip()))
+                        if not product:
+                            raise ValueError(f"Invalid product ID: {row['product']}")
+                        data.update({
+                            'product': product,
+                            'qty': float(row['qty']),
+                            'rate': float(row['rate']),
+                        })
+
+                    model_class.objects.create(**data)
+
+                except Exception as e:
+                    invalid_rows.append({'row': idx, 'data': row, 'error': str(e)})
+
+            if invalid_rows:
+                messages.warning(request, "Some rows were skipped due to errors.")
+            else:
+                messages.success(request, "CSV processed successfully.")
+    else:
+        form = UploadFileForm()
+
+    return render(request, 'file.html', {
+        'form': form,
+        'invalid_rows': invalid_rows
+    })
+
+
+def upload_invoice(request):
+    return handle_csv_uploa1(request, Invoice_model, Customer, Add_item_model)
+
+def upload_purchase(request):
+    return handle_csv_upload1(request, Purchase_model, Seller, Add_item_model)
+
+def upload_cashebook(request):
+    return handle_csv_upload1(request, CashBook, Customer)
+
+def upload_purchasebook(request):
+    return handle_csv_upload1(request, PurchaseBook, Seller)
