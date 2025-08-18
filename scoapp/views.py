@@ -383,18 +383,6 @@ def process_b2c(request):
 def b2b(request):
     head = "Bill"
     items = Add_item_model.objects.exclude(image__isnull=True).exclude(image__exact='')  
-    d1 = {}  # Initialize the dictionary for sold products
-    d2 = {}  
-    d={}
-    for p in items:
-        prod = p.id
-        prod_name = p.product
-        purchased = total_quantity(Purchase_model, prod)
-        d[prod_name] = purchased
-        sold = total_quantity(Invoice_model, prod)
-        d1[prod_name] = sold
-        bal = purchased - sold
-        d2[prod_name] = bal
     form = InvoiceSecond_form(request.POST or None)
     print(items)
     return render(request, 'invoiceb2b.html', context={'items': items, 'head': head, 'form': form})
@@ -426,14 +414,17 @@ def process_b2b(request):
                     print(f"Skipping invalid product: {product}")
                     continue
                 product_id = product.get('productId')
-                payment_mode = product.get('mode')  # Payment mode
-                quantity = product.get('qty', 1)  # Default quantity is 1 if not provided
+                payment_mode = product.get('mode')  
+                quantity = product.get('qty', 1) 
                 seller_buyer_id = product.get('customer')  
             
                 seller_buyer = Customer.objects.get(id=seller_buyer_id)
                 print('Mode:', payment_mode)                              
                 print('Quantity:', quantity)  
                 print("Seller/Buyer:", seller_buyer)
+                from_company = SetupCompany.objects.all()
+                for f in from_company:
+                    gstperc = f.gsttype
                 if not product_id:
                     print("Missing product ID, skipping this product.")
                     continue
@@ -445,15 +436,19 @@ def process_b2b(request):
                     ratee = p.rate  # Product rate
                     print('Product rate:', ratee)
                     try:
-                        amount = float(quantity) * float(ratee)  # Calculate the amount
+                        amount_before_gst = float(quantity) * float(ratee)  
+                        gst_amt = float(amount_before_gst) * float(gstperc)/100
+                        amount = float(gst_amt) + float(amount_before_gst)
                         print('Amount:', amount)
                     except Exception as e:
                         print(f"Error calculating amount: {e}")
                         continue
+                
                     new_invoice = Invoice_model(
                         product_id=product_id,
                         qty=quantity,
                         rate = ratee,
+                        gst = gst_amt,
                         amt=amount,
                         billnum=bill_number,  # Ensure all products have the same billnum
                         mode=payment_mode,
@@ -618,6 +613,121 @@ def purchaseauto_process(request):
     return render(request, 'invoice_purchAuto.html', context={})
 
 
+def purchase(request):
+    head="Purchase"
+    items = Add_item_model.objects.exclude(image__isnull=True).exclude(image__exact='') 
+    form = Purchase_form2(request.POST or None) 
+    return render(request,'invoice_purch.html',context={'items':items,'head':head,'form':form,})
+
+def process_purchase(request):
+    print("enter Purchase view")
+    usr = request.user.id
+    print('usr',usr)
+    if request.method == 'POST':
+        print('POST request received')
+        try:
+            print('Entering POST try block')
+            selected_products = json.loads(request.body.decode('utf-8'))
+            print(selected_products)
+            
+            if not isinstance(selected_products, list):
+                raise ValueError("Expected a list of products, got something else.")
+            
+            total_amount = 0
+            
+            if not selected_products:
+                print("No products received in the order.")
+                return redirect('b2c')
+            
+            # Get the latest purchase invoice and calculate the next bill number
+            try:
+                latest_invoice = Purchase_model.objects.latest('date')
+                bill_number = latest_invoice.num
+            except Purchase_model.DoesNotExist:
+                bill_number = 1
+
+            print('Bill number:', bill_number)
+
+            for product in selected_products:  
+                if not isinstance(product, dict):
+                    print(f"Skipping invalid product: {product}")
+                    continue
+                
+                product_id = product.get('productId')
+                payment_mode = product.get('mode')  # Payment mode
+                quantity = product.get('qty',)  # Default quantity is 1 if not provided
+                seller_buyer_id = product.get('customer')  # Seller ID (not the instance yet)
+                
+                try:
+                    seller_buyer = Seller.objects.get(id=seller_buyer_id)
+                except Seller.DoesNotExist:
+                    print(f"Seller with ID {seller_buyer_id} not found.")
+                    continue
+                
+                print('Mode:', payment_mode)                              
+                print('Quantity:', quantity)  
+                print("Seller/Buyer:", seller_buyer)
+
+                if not product_id:
+                    print("Missing product ID, skipping this product.")
+                    continue
+                
+                product_list = Add_item_model.objects.filter(id=product_id)
+                if not product_list.exists():
+                    print(f"Product with ID {product_id} not found.")
+                    continue
+                
+                # Process the product
+                for p in product_list:
+                    rate = p.rate_purch  # Product rate
+                    print('Product rate:', rate)
+                    try:
+                        amount = int(quantity) * int(rate)  # Calculate the amount
+                        print('Amount:', amount)
+                    except Exception as e:
+                        print(f"Error calculating amount: {e}")
+                        continue
+                    
+                    # Create a new purchase record with the same billnum for all products
+                    new_invoice = Purchase_model(
+                        product_id=product_id,
+                        qty=quantity,
+                        amt=amount,
+                        mode=payment_mode,
+                        selbuy=seller_buyer , # Passing the actual Seller instance
+                        user = request.user
+                    )
+
+                    # Save the invoice to the database
+                    new_invoice.save()
+                    print(f"Invoice data saved: {new_invoice}")
+                    
+                    # Update total amount
+                    total_amount += amount
+                    
+                    # If payment mode is cash or UPI, add to PurchaseBook
+                    if payment_mode in ['cash', 'UPI']:
+                        try:
+                            purchase_book_entry = PurchaseBook(
+                                user = request.user,
+                                selbuy=seller_buyer,  # Link to the seller
+                                amt=amount,  # Amount paid
+                                mode=payment_mode,  # Payment mode (cash/UPI)
+                                comment=f"Payment for Purchase Invoice {bill_number}"  # Optional comment
+                            )
+                            purchase_book_entry.save()
+                            print(f"PurchaseBook entry saved: {purchase_book_entry}")
+                        except Exception as e:
+                            print(f"Error saving PurchaseBook entry: {e}")
+
+            # Return a redirect or response based on successful processing
+            return redirect('b2c')  # Redirect to the b2c page after processing
+
+        except Exception as e:
+            print(f"Error processing order: {e}")
+            return render(request, 'port.html', context={'error_message': 'Error processing order.'})
+
+    return render(request, 'invoice_purch.html', context={})
 
 def purchaseRetail(request):
     head = "Purchase"
@@ -895,75 +1005,165 @@ def invoice(request):
     # Fetch the latest invoice and related products
     query = Invoice_model.objects.all().latest('date')
     latest_invoices = Invoice_model.objects.filter(billnum=query.billnum)
-
-    # Initialize variables
     products = []
     invoice_num = invoice_to = created = payment = ""
-    
+
+    # Defaults for company and outward data
+    company_name = company_address = company_phone = company_acc = company_bank = company_gst = company_ifsc = ""
+    outward_name = outward_address = outward_phone = outward_acc = outward_bank = outward_gst = outward_ifsc = ""
+
+    # Get company details
+    mycompany = SetupCompany.objects.all()
+    if mycompany.exists():
+        company = mycompany.first()
+        company_name = company.name
+        company_address = company.address
+        company_phone = company.phone
+        company_acc = company.account
+        company_bank = company.bank
+        company_gst = company.gst
+        company_ifsc = company.ifsc
+
+    # If invoice found
     if latest_invoices.exists():
-        # Get the first invoice details
         first_invoice = latest_invoices[0]
         invoice_num = first_invoice.billnum
         invoice_to = first_invoice.selbuy
         created = first_invoice.date1
         payment = first_invoice.mode
-        
-        # Prepare products list
+
+        # Get outward party details
+        outward = Customer.objects.filter(name=invoice_to)
+        if outward.exists():
+            party = outward.first()
+            outward_name = party.name
+            outward_address = party.address
+            outward_phone = party.phone
+            outward_acc = party.account
+            outward_bank = party.bank
+            outward_gst = party.gst
+            outward_ifsc = party.ifsc
+
+        # Products list
         for qs in latest_invoices:
             products.append({
                 'commodity': qs.product,
                 'quantity': qs.qty,
-                'price': qs.rate,  # Assuming price is a field in the Invoice model
+                'price': qs.rate,
                 'current_price': qs.amt,
             })
 
-    # Prepare the context for rendering
+    # Prepare context
     context = {
         'products': products,
         'invoice_num': invoice_num,
         'invoice_to': invoice_to,
         'created': created,
         'payment': payment,
+        'company': {
+            'name': company_name,
+            'address': company_address,
+            'phone': company_phone,
+            'account': company_acc,
+            'bank': company_bank,
+            'gst': company_gst,
+            'ifsc': company_ifsc,
+        },
+        'outward': {
+            'name': outward_name,
+            'address': outward_address,
+            'phone': outward_phone,
+            'account': outward_acc,
+            'bank': outward_bank,
+            'gst': outward_gst,
+            'ifsc': outward_ifsc,
+        }
     }
-    
+
     return render(request, 'billdis.html', context)
 
 
-
-def invoice1(request,chk):
+def invoice1(request, chk):
     latest_invoices = Invoice_model.objects.filter(billnum=chk)
 
-    # Initialize variables
     products = []
     invoice_num = invoice_to = created = payment = ""
-    
+
+    # Defaults for company and outward data
+    company_name = company_address = company_phone = company_acc = company_bank = company_gst = company_ifsc = ""
+    outward_name = outward_address = outward_phone = outward_acc = outward_bank = outward_gst = outward_ifsc = ""
+
+    # Get company details
+    mycompany = SetupCompany.objects.all()
+    if mycompany.exists():
+        company = mycompany.first()
+        company_name = company.name
+        company_address = company.address
+        company_phone = company.phone
+        company_acc = company.account
+        company_bank = company.bank
+        company_gst = company.gst
+        company_ifsc = company.ifsc
+
+    # If invoice found
     if latest_invoices.exists():
-        # Get the first invoice details
         first_invoice = latest_invoices[0]
         invoice_num = first_invoice.billnum
         invoice_to = first_invoice.selbuy
         created = first_invoice.date1
         payment = first_invoice.mode
-        
-        # Prepare products list
+
+        # Get outward party details
+        outward = Customer.objects.filter(name=invoice_to)
+        if outward.exists():
+            party = outward.first()
+            outward_name = party.name
+            outward_address = party.address
+            outward_phone = party.phone
+            outward_acc = party.account
+            outward_bank = party.bank
+            outward_gst = party.gst
+            outward_ifsc = party.ifsc
+
+        # Products list
         for qs in latest_invoices:
             products.append({
                 'commodity': qs.product,
                 'quantity': qs.qty,
-                'price': qs.rate,  # Assuming price is a field in the Invoice model
+                'price': qs.rate,
                 'current_price': qs.amt,
+                'gst': qs.gst,
             })
 
-    # Prepare the context for rendering
+    # Prepare context
     context = {
         'products': products,
         'invoice_num': invoice_num,
         'invoice_to': invoice_to,
         'created': created,
         'payment': payment,
+        'company': {
+            'name': company_name,
+            'address': company_address,
+            'phone': company_phone,
+            'account': company_acc,
+            'bank': company_bank,
+            'gst': company_gst,
+            'ifsc': company_ifsc,
+        },
+        'outward': {
+            'name': outward_name,
+            'address': outward_address,
+            'phone': outward_phone,
+            'account': outward_acc,
+            'bank': outward_bank,
+            'gst': outward_gst,
+            'ifsc': outward_ifsc,
+        }
     }
-    
+
     return render(request, 'billdis.html', context)
+
 
 
 ##filters
@@ -1700,10 +1900,10 @@ def upload_invoice(request):
     return handle_csv_uploa1(request, Invoice_model, Customer, Add_item_model)
 
 def upload_purchase(request):
-    return handle_csv_upload1(request, Purchase_model, Seller, Add_item_model)
+    return handle_csv_uploa1(request, Purchase_model, Seller, Add_item_model)
 
 def upload_cashebook(request):
-    return handle_csv_upload1(request, CashBook, Customer)
+    return handle_csv_uploa1(request, CashBook, Customer)
 
 def upload_purchasebook(request):
-    return handle_csv_upload1(request, PurchaseBook, Seller)
+    return handle_csv_uploa1(request, PurchaseBook, Seller)
