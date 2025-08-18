@@ -2,275 +2,217 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <title>KARTHICK BIDADI FARM INVOICE</title>
+    <meta charset="UTF-8" />
+    <title>GST Invoice - {{ invoice_num }}</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f4;
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #fff;
+        }
+        .invoice-box {
+            max-width: 900px;
+            padding: 30px;
+            border: 1px solid #000;
+            background: #fff;
+        }
+        h2, h3 {
+            text-align: center;
             margin: 0;
-            padding: 20px;
         }
-
-        .container {
-            width: 80%;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        .section {
+            margin-top: 25px;
         }
-
-        h3 {
-            color: #333;
-            font-size: 24px;
-            margin-bottom: 10px;
+        .info, .bank-details {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
         }
-
+        .info div, .bank-details div {
+            width: 48%;
+        }
         table {
             width: 100%;
-            margin-top: 20px;
             border-collapse: collapse;
-            border-spacing: 0;
+            margin-top: 25px;
+            background: #fff;
         }
-
         th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        th {
-            background-color: #f4f4f4;
-            font-weight: bold;
-        }
-
-        td {
-            background-color: #fafafa;
-        }
-
-        .top td {
-            padding-bottom: 10px;
-        }
-
-        .total td {
-            border-top: 2px solid #eee;
-            font-weight: bold;
-            text-align: right;
-            padding-top: 10px;
-        }
-
-        .amount, .price, .quantity, .discount {
-            text-align: center;
-        }
-
-        input[type="number"] {
+            border: 1px solid #000;
             padding: 8px;
-            width: 100%;
-            margin: 10px 0;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        .change, .total-amount {
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .change {
-            color: #4CAF50;
-        }
-
-        .total-amount {
-            color: #FF5722;
-        }
-
-        .footer {
             text-align: center;
-            margin-top: 30px;
-            font-size: 14px;
-            color: #888;
         }
-
-        .footer a {
-            color: #4CAF50;
-            text-decoration: none;
+        .text-right {
+            text-align: right;
         }
-
-        .download-btn {
-            display: inline-block;
+        .no-border {
+            border: none;
+        }
+        .signature {
+            text-align: right;
+            margin-top: 50px;
+        }
+        hr {
+            border: 1px solid #000;
+        }
+        #download-pdf-btn {
+            margin-bottom: 20px;
             padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
             font-size: 16px;
-            margin-top: 20px;
-        }
-
-        .download-btn:hover {
-            background-color: #45a049;
-        }
-
-        @media screen and (max-width: 768px) {
-            .container {
-                width: 90%;
-            }
-        }
-
-        @media screen and (max-width: 576px) {
-            .container {
-                width: 100%;
-            }
+            cursor: pointer;
         }
     </style>
-    <script>
-        // Function to calculate the total bill amount
-        function calculateTotalBill() {
-            var totalAmount = 0;
-            var products = document.querySelectorAll('.item');
-
-            // Loop through each product row to sum up the current_price
-            products.forEach(function(product) {
-                var currentPrice = parseFloat(product.querySelector('.amount').innerText.replace('₹', '').trim());
-                totalAmount += currentPrice;
-            });
-
-            // Update the total bill price in the UI
-            document.getElementById("totalAmount").innerText = '₹ ' + totalAmount.toFixed(2);
-            return totalAmount;
-        }
-
-        // Function to calculate the total amount and change
-        function calculateTotalAndChange() {
-            // Get the total amount of the invoice
-            var totalAmount = calculateTotalBill();
-
-            // Get the cash received by the user
-            var cashReceived = parseFloat(document.getElementById("cashReceived").value);
-
-            // If cash received is greater than or equal to the total amount, calculate the change
-            if (!isNaN(cashReceived) && cashReceived >= totalAmount) {
-                var change = cashReceived - totalAmount;
-                document.getElementById("change").innerText = '₹ ' + change.toFixed(2);
-            } else {
-                // If cash received is less than the total, set change to 0.00
-                document.getElementById("change").innerText = '₹ 0.00';
-            }
-        }
-
-        // Function to download the invoice content with the same styling
-        function downloadInvoice() {
-            var content = document.getElementById('invoiceContent').innerHTML;
-            
-            // Get the current page's styles (all <style> tags)
-            var styles = document.querySelectorAll('style');
-            var css = '';
-            styles.forEach(function(style) {
-                css += style.innerHTML;
-            });
-
-            // Create the complete HTML for the downloadable file
-            var fullContent = `
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="utf-8" />
-                <title>KARTHICK BIDADI FARM INVOICE</title>
-                <style>
-                    ${css}
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    ${content}
-                </div>
-            </body>
-            </html>
-            `;
-
-            // Create a Blob object with the HTML content
-            var blob = new Blob([fullContent], { type: 'text/html' });
-            
-            // Create an anchor tag and trigger a download
-            var link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'invoice.html';  // File name to be downloaded
-            link.click();
-        }
-
-        window.onload = calculateTotalAndChange;
-    </script>
 </head>
-
 <body>
-    <div class="container">
-        <!-- Main content container where the bill content is located -->
-        <div id="invoiceContent">
-            <h3>KARTHICK BIDADI FARM INVOICE</h3>
-            <table cellpadding="0" cellspacing="0">
-                <tr class="top">
-                    <td colspan="2">
-                        <table>
-                            <tr>
-                                <td class="title"></td>
-                                <td>
-                                    <strong>Invoice #:</strong> {{ invoice_num }}<br />
-                                    <strong>Invoice To:</strong> {{ invoice_to }}<br />
-                                    <strong>Created:</strong> {{ created }}<br />
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
 
-                <tr class="heading">
-                    <td>Product</td>
-                    <td>Rate</td>
-                    <td>Quantity</td>
-                    <td>Amount</td>
-                </tr>
+<button id="download-pdf-btn">Download Invoice PDF</button>
 
-                <!-- Loop over each product dynamically -->
-                {% for product in products %}
-                <tr class="item">
-                    <td>{{ product.commodity }}</td>
-                    <td class="price">{{ product.price }}</td>
-                    <td class="quantity">{{ product.quantity }}</td>
-                    <td class="amount">{{ product.current_price }}</td>
-                </tr>
-                {% endfor %}
+<div class="invoice-box" id="invoice-content">
+    <h2> INVOICE</h2>
 
-                <tr class="total">
-                    <td colspan="4">Total:</td>
-                    <td>
-                        <strong id="totalAmount">₹ 0.00</strong>
-                    </td>
-                </tr>
-            </table>
+    <hr />
+
+    <div class="section info">
+        <div>
+            <h4>From:</h4>
+            <strong>{{ company.name }}</strong><br />
+            {{ company.address }}<br />
+            Phone: {{ company.phone }}<br />
+            GSTIN: {{ company.gst }}
         </div>
-
-        <!-- Button to trigger download of the invoice content -->
-        <a href="javascript:void(0);" class="download-btn" onclick="downloadInvoice()">Download Invoice</a>
-
-        <!-- Cash Received and Change section -->
-        <div style="margin-top: 30px;">
-            <label for="cashReceived">Cash Received:</label>
-            <input type="number" id="cashReceived" name="cashReceived" oninput="calculateTotalAndChange()" />
-
-            <div style="margin-top: 10px;">
-                <strong>Change:</strong>
-                <span id="change" class="change">₹ 0.00</span>
-            </div>
+        <div>
+            <h4>To:</h4>
+            <strong>{{ outward.name }}</strong><br />
+            {{ outward.address }}<br />
+            Phone: {{ outward.phone }}<br />
+            GSTIN: {{ outward.gst }}
         </div>
     </div>
 
-    <script>
-        calculateTotalAndChange();
-    </script>
+    <div class="section">
+        <strong>Invoice No:</strong> {{ invoice_num }}<br />
+        <strong>Invoice Date:</strong> {{ created }}<br />
+        <strong>Payment Mode:</strong> {{ payment }}
+    </div>
+
+    <hr />
+
+    <table>
+        <thead>
+            <tr>
+                <th>Sr No.</th>
+                <th>Description of Goods</th>
+                <th>Quantity</th>
+                <th>Rate (₹)</th>
+                <th>GST Amount (₹)</th>
+                <th>Total (₹)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in products %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.commodity }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.price }}</td>
+                    <td class="gst-amount">{{ item.gst }}</td>
+                    <td class="item-amount">{{ item.current_price }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <table style="margin-top: 20px;">
+        <tr>
+            <td class="no-border text-right"><strong>Base Amount (Before GST):</strong></td>
+            <td class="text-right">₹ <span id="base-amount">0.00</span></td>
+        </tr>
+        <tr>
+            <td class="no-border text-right"><strong>Total GST:</strong></td>
+            <td class="text-right">₹ <span id="total-gst">0.00</span></td>
+        </tr>
+        <tr>
+            <td class="no-border text-right"><strong>Total Amount:</strong></td>
+            <td class="text-right">₹ <span id="total-amount">0.00</span></td>
+        </tr>
+    </table>
+
+    <hr />
+
+    <div class="section bank-details">
+        <div>
+            <h4>Bank Details:</h4>
+            Bank: {{ company.bank }}<br />
+            A/C No: {{ company.account }}<br />
+            IFSC: {{ company.ifsc }}
+        </div>
+        <div>
+            <h4>Beneficiary:</h4>
+            {{ company.name }}<br />
+            GSTIN: {{ company.gst }}
+        </div>
+    </div>
+
+    <div class="section">
+        This is a eletronically generated document,no signature is required    </div>
+
+    
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    // Calculate and display totals
+    document.addEventListener("DOMContentLoaded", function () {
+        const amountCells = document.querySelectorAll(".item-amount");
+        const gstCells = document.querySelectorAll(".gst-amount");
+
+        let totalAmount = 0;
+        let totalGST = 0;
+
+        amountCells.forEach(cell => {
+            const amount = parseFloat(cell.textContent.trim().replace(/,/g, '')) || 0;
+            totalAmount += amount;
+        });
+
+        gstCells.forEach(cell => {
+            const gst = parseFloat(cell.textContent.trim().replace(/,/g, '')) || 0;
+            totalGST += gst;
+        });
+
+        const baseAmount = totalAmount - totalGST;
+
+        function formatINR(num) {
+            return num.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        document.getElementById("base-amount").textContent = formatINR(baseAmount);
+        document.getElementById("total-gst").textContent = formatINR(totalGST);
+        document.getElementById("total-amount").textContent = formatINR(totalAmount);
+    });
+
+    // Download invoice as PDF
+    document.getElementById('download-pdf-btn').addEventListener('click', function () {
+        const { jsPDF } = window.jspdf;
+        const invoice = document.getElementById('invoice-content');
+
+        html2canvas(invoice, { scale: 2 }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+
+            // Calculate width and height for pdf (keeping aspect ratio)
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save('invoice-{{ invoice_num }}.pdf');
+        });
+    });
+</script>
+
 </body>
 </html>
