@@ -32,7 +32,7 @@
 
 <!-- Main Content -->
 {% if user.is_authenticated %}
-    {% if user.get_role_display == 'manager' %}
+    {% if user.get_role_display == 'Manager' %}
         <div class="main-content" id="main">
             <nav class="navbar">
                 <div class="menu-toggle" id="menuToggle">
@@ -75,14 +75,14 @@
             </div>
         </div>
 
-    {% elif user.get_role_display == 'employee' %}
+    {% elif user.get_role_display == 'Employee' %}
         <div class="main-content" id="main">
             <nav class="navbar">
                 <div class="menu-toggle" id="menuToggle">
                     <span class="menu-icon">☰</span> <!-- Hamburger icon -->
                 </div>
                 <ul class="navbar-list">
-                    <li><a href="{% url 'b2c' %}">Sale</a></li>
+                    <li><a href="{% url 'b2b' %}">Sale</a></li>
                     <li><a href="{% url 'retailpurch' %}">Purchase</a></li>
                     <li><a href="{% url 'cashbook' %}">Cashbook</a></li>
                     <li><a href="{% url 'purchasebook' %}">Purchasebook</a></li>
