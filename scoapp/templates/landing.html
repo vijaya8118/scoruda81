@@ -186,7 +186,7 @@
         // Update the Login link text and href to reflect the current URL
         const loginLink = document.getElementById("loginLink");
         loginLink.textContent = "Login for " + window.location.hostname;  // Display hostname, e.g., "Login for example.com"
-        loginLink.href = currentUrl + "/login";  // Add the /login path to the current URL
+        loginLink.href = currentUrl + "login";  // Add the /login path to the current URL
 
         function goToUrl() {
             var url = document.getElementById("urlInput").value;
